@@ -39,7 +39,7 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def get_user(db, username: str):
+def get_user(username: str):
     user_dict = ds.get_user_in_db(username)
     return UserInDB(**user_dict.dict())
 
@@ -98,7 +98,7 @@ async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()], response_model=None
 ):
     user = authenticate_user(form_data.username, form_data.password)
-    print(user)
+    # print(user)
 
     if not user:
         raise HTTPException(
