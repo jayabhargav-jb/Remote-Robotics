@@ -14,8 +14,8 @@ class User(BaseModel):
     username: str
     blacklist: bool = False
     disabled : bool = False
-    start_time: datetime
-    end_time: datetime
+    start_time: str
+    end_time: str
 
 
 class UserInDB(User):

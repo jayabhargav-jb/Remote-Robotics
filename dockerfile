@@ -1,12 +1,20 @@
 FROM ubuntu:24.04
 
+ENV TZ="Asia/Kolkata"
+RUN date
+
 # Update and install the necessary packages
 RUN apt update -y && apt upgrade -y && apt install -y python3 python3-pip python3-venv git python3-full
 
 # Create the python virtual environment
-RUN python3 -m venv /opt/venv
-WORKDIR /opt/venv
+# RUN python3 -m venv /opt/venv
+# WORKDIR /opt/venv
+# RUN . ./bin/activate
+
+RUN python3 -m venv /venv
+WORKDIR /venv
 RUN . ./bin/activate
+
 
 # Install requirements
 COPY ./requirements.txt /src/requirements.txt
@@ -15,6 +23,9 @@ RUN pip install -r /src/requirements.txt --break-system-packages
 # Make a http folder for the static html files
 RUN mkdir /srv/http
 WORKDIR /srv/http
+
+# Make a folder for the database
+RUN mkdir /var/lib/sqlite
 
 # Create a secret key for hashing, make it readonly
 RUN openssl rand -hex 32 > /etc/secret

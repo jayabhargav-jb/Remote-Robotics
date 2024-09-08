@@ -97,7 +97,7 @@ def get_user_in_db(username: str) -> UserInDB | None:
     try: 
         sqliteConnection = sqlite3.connect("/var/lib/sqlite/users.db")
         cursor = sqliteConnection.cursor()
-        print('Connected to DB')
+        print('Connected to DB in get_user_in_db')
 
         # Write a query to fetch the user details based on the username
         query = "SELECT * FROM users WHERE username = ?"
@@ -169,7 +169,7 @@ def init():
             # Insert root user into the table
             root_user_query = '''
             INSERT INTO users
-            VALUES ('root', 'hashed_password', 0, 0, NULL, NULL);
+            VALUES ('root', '$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 0, 0, 0, 0);
             '''
             cursor.execute(root_user_query)
             sqliteConnection.commit()
