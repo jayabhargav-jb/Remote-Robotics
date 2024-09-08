@@ -1,11 +1,11 @@
-FROM ubuntu:latest
+FROM ubuntu:24.04
 
 # Update and install the necessary packages
 RUN apt update -y && apt upgrade -y && apt install -y python3 python3-pip python3-venv git python3-full
 
 # Create the python virtual environment
-RUN python3 -m venv /opt/.venv
-WORKDIR /opt/.venv
+RUN python3 -m venv /opt/venv
+WORKDIR /opt/venv
 RUN . ./bin/activate
 
 # Install requirements
@@ -16,10 +16,14 @@ RUN pip install -r /src/requirements.txt --break-system-packages
 RUN mkdir /srv/http
 WORKDIR /srv/http
 
+# Create a secret key for hashing, make it readonly
+RUN openssl rand -hex 32 > /etc/secret
+RUN chmod 400 /etc/secret
+
 # Only for development purposes allow acces via volumes
 
 # Maintain the folder structure as index.html followed by folders for css & js
-# COPY ./http/ /srv/http/
+# COPY ./http/ /srv/http/ # TODO: Uncomment this line
 VOLUME [ "/srv/http" ]
 
 WORKDIR /src/
