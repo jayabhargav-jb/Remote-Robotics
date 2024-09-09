@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.staticfiles import StaticFiles
 
 import jwt
 from jwt.exceptions import InvalidTokenError
@@ -30,6 +31,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 app = FastAPI()
 ds.init()
 
+# Site served at <ip>:8080/static/index.html
+app.mount("/static", StaticFiles(directory="/srv/http"), name="static")
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
