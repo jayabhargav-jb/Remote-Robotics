@@ -1,3 +1,13 @@
 # RERO Project Documentation & Structure
 
 
+---
+
+## Developers Notes
+
+Killing uvicorn
+
+```bash
+pgrep -f 'uvicorn'
+kill $(pgrep -P <pid>)
+```

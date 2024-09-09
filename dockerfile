@@ -37,9 +37,13 @@ RUN chmod 400 /etc/secret
 # COPY ./http/ /srv/http/ # TODO: Uncomment this line
 VOLUME [ "/srv/http" ]
 
-WORKDIR /src/
+WORKDIR /app/
 # COPY ./src /src/ # TODO: Uncomment this line
-VOLUME [ "/src" ]
+VOLUME [ "/app" ]
+
+
+# Copy the run.py file
+# COPY ./run.py /run.py
 
 # Expose port 8080 for user interface
 EXPOSE 8080

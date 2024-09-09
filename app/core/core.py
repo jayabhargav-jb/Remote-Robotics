@@ -1,3 +1,6 @@
+from typing import Annotated
+from fastapi import APIRouter, HTTPException, Depends
+
 from datetime import datetime, timedelta, timezone
 
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -7,8 +10,11 @@ from fastapi.staticfiles import StaticFiles
 import jwt
 from jwt.exceptions import InvalidTokenError
 
-from models.user import Token, TokenData, User, UserInDB
-import database_sentinel as ds
+# from models.user import Token, TokenData, User, UserInDB
+from ..database import operations as ds
+# from app.database import operations as ds
+from .schemas import Token, TokenData, User, UserInDB
+
 
 import pytz
 import sqlite3
@@ -16,6 +22,10 @@ import sqlite3
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from typing import Annotated
+
+router = APIRouter(
+    # prefix="/core",
+)
 
 with open("/etc/secret") as f:
     global SECRET_KEY
@@ -96,7 +106,7 @@ async def get_current_active_user(
     return current_user
 
 
-@app.post("/token")
+@router.post("/token")
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()], response_model=None
 ):
@@ -135,23 +145,8 @@ async def login_for_access_token(
     return Token(access_token=access_token, token_type="bearer")
 
 
-# TODO: Remove this test method
-@app.get("/users/me/", response_model=User)
-async def read_users_me(
-    current_user: Annotated[User, Depends(get_current_active_user)],
-):
-    return current_user
 
-
-# TODO: Remove this test method
-@app.get("/users/me/items/")
-async def read_own_items(
-    current_user: Annotated[User, Depends(get_current_active_user)],
-):
-    return [{"item_id": "Foo", "owner": current_user.username}]
-
-
-@app.post("/adduser/{username}")
+@router.post("/adduser/{username}")
 async def add_user(
     current_user: Annotated[User, Depends(get_current_active_user)], user: UserInDB
 ):
@@ -175,7 +170,7 @@ async def add_user(
         )
     
 
-@app.get("/timeslot")
+@router.get("/timeslot")
 async def get_timeslots(
     current_user: Annotated[User, Depends(get_current_active_user)]
 ):
@@ -192,7 +187,7 @@ async def get_timeslots(
         )
 
 
-@app.get("/timeslot/allot")
+@router.get("/timeslot/allot")
 async def set_timeslot(
     username: str,
     start_time: str,
@@ -219,3 +214,4 @@ async def set_timeslot(
             detail="Not Authorized",
             headers={"WWW-Authenticate": "Bearer"},
         )
+

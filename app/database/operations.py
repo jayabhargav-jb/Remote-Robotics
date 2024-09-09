@@ -1,7 +1,8 @@
 import sqlite3
 from typing import List
 
-from models.user import User, UserInDB
+# from models.user import User, UserInDB
+from ..core.schemas import User, UserInDB
 
 
 def add_user(user: UserInDB):
