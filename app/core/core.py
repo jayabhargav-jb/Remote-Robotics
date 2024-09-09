@@ -42,7 +42,7 @@ app = FastAPI()
 ds.init()
 
 # Site served at <ip>:8080/static/index.html
-app.mount("/static", StaticFiles(directory="/srv/http"), name="static")
+router.mount("/static", StaticFiles(directory="/srv/http"), name="static")
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)

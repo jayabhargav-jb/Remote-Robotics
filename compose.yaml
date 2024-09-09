@@ -4,7 +4,7 @@ services:
             context: .
             dockerfile: dockerfile
         volumes:
-            - ./app:/app
+            - ./app:/rero/app
             - ./http:/srv/http
         ports:
             - 8080:8080

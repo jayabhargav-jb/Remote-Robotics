@@ -7,13 +7,13 @@ RUN date
 RUN apt update -y && apt upgrade -y && apt install -y python3 python3-pip python3-venv git python3-full
 
 # Create the python virtual environment
-# RUN python3 -m venv /opt/venv
-# WORKDIR /opt/venv
-# RUN . ./bin/activate
-
-RUN python3 -m venv /venv
-WORKDIR /venv
+RUN python3 -m venv /opt/venv
+WORKDIR /opt/venv
 RUN . ./bin/activate
+
+# RUN python3 -m venv /venv
+# WORKDIR /venv
+# RUN . ./bin/activate
 
 
 # Install requirements
@@ -37,9 +37,9 @@ RUN chmod 400 /etc/secret
 # COPY ./http/ /srv/http/ # TODO: Uncomment this line
 VOLUME [ "/srv/http" ]
 
-WORKDIR /app/
+WORKDIR /rero/
 # COPY ./src /src/ # TODO: Uncomment this line
-VOLUME [ "/app" ]
+VOLUME [ "/rero/app" ]
 
 
 # Copy the run.py file
@@ -48,7 +48,7 @@ VOLUME [ "/app" ]
 # Expose port 8080 for user interface
 EXPOSE 8080
 
-# Export port 8081 for the API connect
+# Export port 8081 for the websocket
 EXPOSE 8081
 
 # Replace this with the command to run the server
