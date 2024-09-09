@@ -1,4 +1,5 @@
 import sqlite3
+from typing import List
 
 from models.user import User, UserInDB
 
@@ -47,6 +48,47 @@ def add_user(user: UserInDB):
             print('SQLite Connection closed')
 
     return success_flag
+
+def get_users() -> List[User]:
+    
+        users: List[User] = []
+        sqliteConnection = None
+    
+        try:
+            sqliteConnection = sqlite3.connect("/var/lib/sqlite/users.db")
+            cursor = sqliteConnection.cursor()
+            print('Connected to DB')
+    
+            # Write a query to fetch all the users
+            query = "SELECT * FROM users"
+            cursor.execute(query)
+            users_details = cursor.fetchall()
+    
+            # Check if users exist
+            if users_details:
+                # Create a User object with the fetched details
+                for user_details in users_details:
+                    user = User(username=user_details[0], hashed_password=user_details[1], disabled=user_details[2], blacklist=user_details[3], start_time=user_details[4], end_time=user_details[5])
+                    users.append(user)
+            else:
+                print("DB: No users found")
+            
+        # Handle errors
+        except sqlite3.Error as error:
+            print('DB: Error occurred - ', error)
+    
+        
+        except Exception as e:
+            print("DB: Non SQL Exception -", e)
+    
+        finally:
+    
+            if sqliteConnection:
+                sqliteConnection.close()
+                print("DB: Connection Closed")
+    
+            return users
+
 
 # TODO: Optimize this function to use get_user_in_db and remove the hashed_password
 def get_user(username: str) -> User | None:
@@ -188,3 +230,42 @@ def init():
         if sqliteConnection:
             sqliteConnection.close()
             print('DB: SQLite Connection closed')
+
+
+def allot_timeslot(username: str, start_time: str, end_time: str) -> User | None:
+    
+        sqliteConnection = None
+        user = None
+    
+        try:
+            sqliteConnection = sqlite3.connect("/var/lib/sqlite/users.db")
+            cursor = sqliteConnection.cursor()
+            print('DB: Init')
+    
+            # Update the start_time and end_time of the user
+            query = "UPDATE users SET start_time = ?, end_time = ? WHERE username = ?"
+            cursor.execute(query, (start_time, end_time, username))
+            sqliteConnection.commit()
+    
+            # Check if any rows were affected
+            if cursor.rowcount > 0:
+                print("DB: User", username, "timeslot updated successfully")
+            else:
+                print("DB: User", username, "not found")
+            
+        # Handle errors
+        except sqlite3.Error as error:
+            print('DB: Error occurred - ', error)
+            raise sqlite3.Error
+        
+        except Exception as e:
+            print("DB: Non SQL Exception -", e)
+            raise e
+    
+        finally:
+    
+            if sqliteConnection:
+                sqliteConnection.close()
+                print("DB: Connection Closed")
+    
+            return user

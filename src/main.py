@@ -97,8 +97,8 @@ async def get_current_active_user(
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()], response_model=None
 ):
+
     user = authenticate_user(form_data.username, form_data.password)
-    # print(user)
 
     if not user:
         raise HTTPException(
@@ -162,6 +162,52 @@ async def add_user(
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Duplicate username",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not Authorized",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+
+@app.get("/timeslot")
+async def get_timeslots(
+    current_user: Annotated[User, Depends(get_current_active_user)]
+):
+    if current_user.username == "root":
+        users = ds.get_users()
+        # Removing the root entry
+        users.pop(0)
+        return users
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not Authorized",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+@app.get("/timeslot/allot")
+async def set_timeslot(
+    username: str,
+    start_time: str,
+    end_time: str,
+    current_user: Annotated[User, Depends(get_current_active_user)]
+):
+    """ Allot a timeslot to the user
+        Only root user is authorized to allot timeslots
+    """
+    if current_user.username == "root":
+        user = ds.get_user(username)
+        if user:
+            ds.allot_timeslot(username, start_time, end_time)
+            return ds.get_user(username)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
                 headers={"WWW-Authenticate": "Bearer"},
             )
     else:
