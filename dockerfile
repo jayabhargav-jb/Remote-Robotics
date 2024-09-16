@@ -1,24 +1,22 @@
-FROM ubuntu:24.04
+FROM ubuntu:22.04
 
 ENV TZ="Asia/Kolkata"
 RUN date
+
+# Set timezone:
+RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone
 
 # Update and install the necessary packages
 RUN apt update -y && apt upgrade -y && apt install -y python3 python3-pip python3-venv git python3-full
 
 # Create the python virtual environment
-RUN python3 -m venv /opt/venv
-WORKDIR /opt/venv
-RUN . ./bin/activate
-
-# RUN python3 -m venv /venv
-# WORKDIR /venv
-# RUN . ./bin/activate
-
+RUN python3 -m venv /rero/venv
+RUN . /rero/venv/bin/activate
 
 # Install requirements
+# Despite the use of volume, this is required as volumes are set up towards the end of the container setup
 COPY ./requirements.txt /src/requirements.txt
-RUN pip install -r /src/requirements.txt --break-system-packages
+RUN python3 -m pip install -r /src/requirements.txt
 
 # Make a http folder for the static html files
 RUN mkdir /srv/http
@@ -41,16 +39,12 @@ WORKDIR /rero/
 # COPY ./src /src/ # TODO: Uncomment this line
 VOLUME [ "/rero/app" ]
 
-
-# Copy the run.py file
-# COPY ./run.py /run.py
-
 # Expose port 8080 for user interface
 EXPOSE 8080
 
 # Export port 8081 for the websocket
 EXPOSE 8081
 
-# Replace this with the command to run the server
+# TODO: Replace this with the command to run the server
 CMD ["bash"]
-# CMD [ "uvicorn",  "main:app", "--host", "0.0.0.0", "--port", "8080"]
+# CMD [ "uvicorn",  "app.main:app", "--host", "0.0.0.0", "--port", "8080"]

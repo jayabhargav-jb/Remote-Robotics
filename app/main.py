@@ -9,6 +9,6 @@ app = FastAPI()
 app.include_router(core.router)
 app.include_router(interface.router)
 
-app.mount("/static", StaticFiles(directory="/srv/http"), name="static")
+# app.mount("/static", StaticFiles(directory="/srv/http"), name="static")
 
 

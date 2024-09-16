@@ -101,6 +101,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 async def get_current_active_user(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
+    print(current_user, type(current_user))
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
@@ -151,6 +152,7 @@ async def add_user(
     current_user: Annotated[User, Depends(get_current_active_user)], user: UserInDB
 ):
     if current_user.username == "root":
+
         # Security feature to not allow the root to change the password on entry
         user.hashed_password = get_password_hash(user.username)
         try:
