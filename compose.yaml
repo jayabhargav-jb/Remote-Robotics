@@ -1,0 +1,16 @@
+services:
+  rero_ros:
+    build:
+      dockerfile: Dockerfile
+
+    # entrypoint: ["/ros_entrypoint.sh"]
+
+    volumes:
+      - .\ros_server:/ros_server
+      - .\ros_test_dir:/ros_test_dir
+
+    ports:
+      - 8080:8080
+      - 8081:8081
+
+    tty: true
