@@ -6,7 +6,13 @@ from ..core.schemas import User, UserInDB
 
 
 def add_user(user: UserInDB):
+    """
+    Function to add a new user into the database
 
+    param: UserInDB
+    return: bool (success)
+    exceptions: sqlite3 Integrity error / sqlite3 Error / other
+    """
     success_flag = False
     sqliteConnection = None
     
@@ -32,13 +38,16 @@ def add_user(user: UserInDB):
 
         success_flag = True
 
+    # Catch  integrity error - unique key repetition
     except sqlite3.IntegrityError as error:
         print('Unique key violation occurred -', error)
         raise sqlite3.IntegrityError
 
+    # Catch other SQL errors
     except sqlite3.Error as error:
         print('Error occurred -', error)
 
+    # General exception
     except Exception as e:
         print("Non SQL Exception -", e)
 
@@ -174,8 +183,6 @@ def get_user_in_db(username: str) -> UserInDB | None:
 
 
 def init():
-    # TODO: Fix bug in error log: Table does not exist
-
     sqliteConnection = None
 
     try:
@@ -184,7 +191,7 @@ def init():
         print('DB: Init')
 
         # Check if the table exists
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='your_table_name';")
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users';")
         table_exists = cursor.fetchone()
 
         if table_exists:
