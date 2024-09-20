@@ -1,9 +1,8 @@
 from typing import Annotated
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, status, FastAPI
 
 from datetime import datetime, timedelta, timezone
 
-from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 
@@ -38,11 +37,11 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-app = FastAPI()
-ds.init()
+# app = FastAPI()
+# ds.init()
 
 # Site served at <ip>:8080/static/index.html
-router.mount("/static", StaticFiles(directory="/srv/http"), name="static")
+# router.mount("/static", StaticFiles(directory="/srv/http"), name="static")
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
@@ -171,49 +170,3 @@ async def add_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-
-@router.get("/timeslot")
-async def get_timeslots(
-    current_user: Annotated[User, Depends(get_current_active_user)]
-):
-    if current_user.username == "root":
-        users = ds.get_users()
-        # Removing the root entry
-        users.pop(0)
-        return users
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not Authorized",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-
-@router.get("/timeslot/allot")
-async def set_timeslot(
-    username: str,
-    start_time: str,
-    end_time: str,
-    current_user: Annotated[User, Depends(get_current_active_user)]
-):
-    """ Allot a timeslot to the user
-        Only root user is authorized to allot timeslots
-    """
-    if current_user.username == "root":
-        user = ds.get_user(username)
-        if user:
-            ds.allot_timeslot(username, start_time, end_time)
-            return ds.get_user(username)
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not Authorized",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-

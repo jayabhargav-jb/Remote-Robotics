@@ -4,4 +4,4 @@ cd /rero/
 . ./venv/bin/activate
 
 # Start the app
-uvicorn app.main:app --host 0.0.0.0 --port 8080
+uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
