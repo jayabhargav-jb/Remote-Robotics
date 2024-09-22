@@ -1,7 +1,7 @@
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, Depends, status, FastAPI
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, date
 
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
@@ -12,7 +12,7 @@ from jwt.exceptions import InvalidTokenError
 # from models.user import Token, TokenData, User, UserInDB
 from ..database import operations as ds
 # from app.database import operations as ds
-from .schemas import Token, TokenData, User, UserInDB
+from .schema import Token, TokenData, User, UserInDB
 
 
 import pytz
@@ -148,15 +148,16 @@ async def login_for_access_token(
 
 @router.post("/adduser/{username}")
 async def add_user(
-    current_user: Annotated[User, Depends(get_current_active_user)], user: UserInDB
-):
+    current_user: Annotated[User, Depends(get_current_active_user)], 
+    user: UserInDB
+) -> User:
     if current_user.username == "root":
 
         # Security feature to not allow the root to change the password on entry
         user.hashed_password = get_password_hash(user.username)
         try:
             ds.add_user(user)
-            return ds.get_user(user.username)
+            return ds.get_user_in_db(user.username)
         except sqlite3.IntegrityError:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -170,3 +171,60 @@ async def add_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
+@router.post("/password/set")
+async def set_password(
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    username: str,
+    password: str,
+    date_of_birth: date
+):
+    """
+    Allow user to set password 
+
+    param: User, password, date_of_birth
+    return:
+
+        success: username
+        failure: HTTPException (401, 500)
+    
+    """
+
+    if username == "root":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not Allowed to change the root password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        
+    # Root user with the date of birth
+    if (current_user == "root") and (ds.get_user(username).date_of_birth == date_of_birth):
+        user = ds.get_user(username)
+        flag = ds.change_password(user.username, get_password_hash(password))
+        if flag:
+            return flag
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Password change failed",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    
+    # Non-root user with the same username and date of birth
+    elif (current_user != "root") and (current_user.username == user.username) and (user.date_of_birth == date_of_birth):
+        user = ds.get_user(username)
+        flag = ds.change_password(user.username, get_password_hash(password))
+        if flag:
+            return flag
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Password change failed",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not Authorized",
+            headers={"WWW-Authenticate": "Bearer"},
+        )

@@ -29,6 +29,10 @@ RUN mkdir /var/lib/sqlite
 RUN openssl rand -hex 32 > /etc/secret
 RUN chmod 400 /etc/secret
 
+# Create directories for storing the files
+RUN mkdir /tmp/iot
+RUN mkdir /tmp/ros
+
 # Only for development purposes allow acces via volumes
 
 # Maintain the folder structure as index.html followed by folders for css & js

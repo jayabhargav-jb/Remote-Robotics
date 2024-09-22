@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from datetime import datetime, timedelta, timezone
 
 from ..database import operations as ds
-from ..core.schemas import Token, TokenData, User, UserInDB
+from ..core.schema import Token, TokenData, User, UserInDB
 
 from ..core.core import get_current_active_user
 
