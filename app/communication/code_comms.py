@@ -35,7 +35,24 @@ async def push_code(
         with open(file_path, "wb") as f:
             f.write(await file.read())
 
-        return True
+        imports: list = check_imports("/tmp/iot/iot_bot.code")
+
+        print(imports)
+
+        if len(imports) > 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid imports: {imports}",
+            )
+        
+        else:
+            bc.alert_bot(bc.IP_IOT_BOT, "/tmp/iot/iot_bot.code")
+
+            return True
+        
+    except HTTPException as e:
+        raise e
+    
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -79,7 +96,7 @@ async def push_code(
             )
             
         else:
-            bc.alert_bot(bc.BOT_ROS, "/tmp/ros/ros_bot.code")
+            bc.alert_bot(bc.IP_ROS_BOT, "/tmp/ros/ros_bot.code")
 
             return True
 

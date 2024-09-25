@@ -1,26 +1,47 @@
+# Author: Ujwal N K
+# Date: 2024-01-25
+# Communication from the server to the bots
+
+from typing import Annotated
+from fastapi import APIRouter, HTTPException, status
+
 import requests
 from requests import Response
 
 # Bot IP Address constants
-BOT_ROS = "192.168.0.104:8082"
-BOT_IOT = "192.168.1.15"
+IP_ROS_BOT = "192.168.0.104:8081"
+IP_IOT_BOT = "192.168.1.106:8082"
 
+router = APIRouter()
 
 def alert_bot(bot: str, file_path: str) -> bool:
     """
     Function to alert bot to get the latest code file from the server
 
-    Makes a POST request to the bot
+    Makes a GET request to the bot
     """
 
-    url: str = f"http://{bot}/upload"
-    files: dict = {"file": open(file_path, "rb")}
-    response: Response = requests.post(url, files=files)
-    files["file"].close()
+    url: str = f"http://{bot}/get_code"
 
-    if response.status_code == 200:
-        print("File sent successfully.")
+    try:
+        response: Response = requests.get(url)
+        response.raise_for_status()
         return True
-    else:
-        print(f"Failed to send file. Status code: {response.status_code}")
+    except requests.RequestException as e:
+        print(f"An error occurred: {e}")
         return False
+    
+
+@router.get("/iot/get_code", status_code=status.HTTP_200_OK)
+def send_code_to_bot():
+    """
+    Endpoint to send the code file to the bot
+    """
+    try:
+        with open("/tmp/iot/iot_bot.code", 'rb') as file:
+            content = file.read()
+        return {"file_content": content.decode('utf-8')}
+    except FileNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))

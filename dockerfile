@@ -53,5 +53,5 @@ EXPOSE 8081
 EXPOSE 8082
 
 # TODO: Replace this with the command to run the server
-CMD ["/bin/bash", "/rero/app/startup.sh"]
+CMD ["/bin/bash", "/rero/app/startup_dev.sh"]
 # CMD [ "uvicorn",  "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
