@@ -46,8 +46,11 @@ VOLUME [ "/rero/app" ]
 # Expose port 8080 for user interface
 EXPOSE 8080
 
-# Export port 8081 for the websocket
+# Export port 8081 for the rosbot
 EXPOSE 8081
+
+# Export port 8082 for the iot
+EXPOSE 8082
 
 # TODO: Replace this with the command to run the server
 CMD ["/bin/bash", "/rero/app/startup.sh"]

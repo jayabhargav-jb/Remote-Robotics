@@ -14,9 +14,9 @@ router = APIRouter()
 @router.get("/timeslot")
 async def get_timeslots(
     current_user: Annotated[User, Depends(get_current_active_user)]
-):
+) -> list[User] | None:
     if current_user.username == "root":
-        users = ds.get_users()
+        users: list[User] = ds.get_users()
         # Removing the root entry
         users.pop(0)
         return users
@@ -34,12 +34,12 @@ async def set_timeslot(
     start_time: str,
     end_time: str,
     current_user: Annotated[User, Depends(get_current_active_user)]
-):
+) -> User:
     """ Allot a timeslot to the user
         Only root user is authorized to allot timeslots
     """
     if current_user.username == "root":
-        user = ds.get_user(username)
+        user: User = ds.get_user(username)
         if user:
             ds.allot_timeslot(username, start_time, end_time)
             return ds.get_user(username)
