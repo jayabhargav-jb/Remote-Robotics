@@ -229,15 +229,15 @@ async def set_password(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-@router.get("/is_auth")
+@router.get("/me")
 async def is_authenticated(current_user: Annotated[User, Depends(get_current_active_user)]):
-    """Get the authenticated user, and authentication status
+    """Get the authenticated user
     
     @return
         {
-            "is_authenticated": authentication status,
             "username": username
         }
 
     """
-    return {"is_authenticated": True, "username": current_user.username}
+    
+    return {"username": current_user.username}
