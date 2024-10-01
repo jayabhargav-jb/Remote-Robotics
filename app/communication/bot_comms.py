@@ -9,7 +9,7 @@ import requests
 from requests import Response
 
 # Bot IP Address constants
-IP_ROS_BOT = "192.168.0.104:8081"
+IP_ROS_BOT = "localhost:8081"
 IP_IOT_BOT = "localhost:8082"
 
 router = APIRouter()
@@ -27,7 +27,7 @@ def push_code(bot: str, file_path: str) -> bool:
 
     print("Alerting the bot")
 
-    url: str = f"http://{bot}/alert"
+    url: str = f"http://{bot}/push_code"
 
     try:
         # Open the file as binary
