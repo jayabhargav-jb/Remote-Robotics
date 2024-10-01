@@ -14,34 +14,33 @@ IP_IOT_BOT = "localhost:8082"
 
 router = APIRouter()
 
-def alert_bot(bot: str, file_path: str) -> bool:
+def push_code(bot: str, file_path: str) -> bool:
     """
-    Function to alert bot to get the latest code file from the server
+    Function to alert bot & send the code file from the server
 
-    Makes a GET request to the bot
+    Makes a multipart POST request to the bot
+
+    @param:
+        bot (str): IP Address of the BOT
+        file_path (str): File path
     """
 
-    url: str = f"http://{bot}/alert" # http://192.168.0.104:8081/get_code -> ros-bot
+    print("Alerting the bot")
+
+    url: str = f"http://{bot}/alert"
 
     try:
-        response: Response = requests.get(url)
-        response.raise_for_status()
-        return True
+        # Open the file as binary
+        with open(file_path, 'rb') as file:
+            files = {'file': file}
+
+            # Make a POST request
+            response: Response = requests.post(url, files=files)
+            response.raise_for_status()
+            return True
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+        return False
     except requests.RequestException as e:
         print(f"An error occurred: {e}")
         return False
-    
-
-@router.get("/get_code/iot", status_code=status.HTTP_200_OK)
-def send_code_to_bot():
-    """
-    Endpoint to send the code file to the bot
-    """
-    try:
-        with open("/tmp/iot/iot_bot.code", 'rb') as file:
-            content = file.read()
-        return {"file_content": content.decode('utf-8')}
-    except FileNotFoundError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found")
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))

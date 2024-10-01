@@ -46,7 +46,7 @@ async def push_code(
             )
         
         else:
-            bc.alert_bot(bc.IP_IOT_BOT, "/tmp/iot/iot_bot.code")
+            bc.push_code(bc.IP_IOT_BOT, "/tmp/iot/iot_bot.code")
 
             return True
         
@@ -96,7 +96,7 @@ async def push_code(
             )
             
         else:
-            bc.alert_bot(bc.IP_ROS_BOT, "/tmp/ros/ros_bot.code")
+            bc.push_code(bc.IP_ROS_BOT, "/tmp/ros/ros_bot.code")
 
             return True
 
