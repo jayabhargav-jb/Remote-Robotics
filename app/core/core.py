@@ -125,7 +125,7 @@ async def login_for_access_token(
 
         raise HTTPException(
             status_code=201,
-            detail="Wait your turn",
+            detail="{"message": "Wait your turn", "timeslot_start": user.start_time, "timeslot_end": user.end_time}",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
