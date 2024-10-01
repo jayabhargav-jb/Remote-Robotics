@@ -126,7 +126,7 @@ async def login_for_access_token(
         raise HTTPException(
             status_code=307,
             detail="Wait your turn",
-            headers={"WWW-Authenticate": "Bearer", "Location": "/wait.html"},
+            headers={"WWW-Authenticate": "Bearer", "Location": "/"},
         )
 
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -228,3 +228,16 @@ async def set_password(
             detail="Not Authorized",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+@router.get("/is_auth")
+async def is_authenticated(current_user: Annotated[User, Depends(get_current_active_user)]):
+    """Get the authenticated user, and authentication status
+    
+    @return
+        {
+            "is_authenticated": authentication status,
+            "username": username
+        }
+
+    """
+    return {"is_authenticated": True, "username": current_user.username}

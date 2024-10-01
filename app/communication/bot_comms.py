@@ -10,7 +10,7 @@ from requests import Response
 
 # Bot IP Address constants
 IP_ROS_BOT = "192.168.0.104:8081"
-IP_IOT_BOT = "192.168.1.106:8082"
+IP_IOT_BOT = "192.168.0.106:8082"
 
 router = APIRouter()
 
@@ -21,7 +21,7 @@ def alert_bot(bot: str, file_path: str) -> bool:
     Makes a GET request to the bot
     """
 
-    url: str = f"http://{bot}/get_code"
+    url: str = f"http://{bot}/alert" # http://192.168.0.104:8081/get_code -> ros-bot
 
     try:
         response: Response = requests.get(url)
@@ -32,7 +32,7 @@ def alert_bot(bot: str, file_path: str) -> bool:
         return False
     
 
-@router.get("/iot/get_code", status_code=status.HTTP_200_OK)
+@router.get("/get_code/iot", status_code=status.HTTP_200_OK)
 def send_code_to_bot():
     """
     Endpoint to send the code file to the bot
