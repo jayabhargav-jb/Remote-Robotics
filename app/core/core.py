@@ -124,7 +124,7 @@ async def login_for_access_token(
     ):
 
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_409_CONFLICT,
             detail={'message': 'Wait your turn', 'timeslot_start': user.start_time, 'timeslot_end': user.end_time},
             headers={"WWW-Authenticate": "Bearer"},
         )
