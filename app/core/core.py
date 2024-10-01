@@ -230,7 +230,7 @@ async def set_password(
         )
 
 @router.get("/me")
-async def is_authenticated(current_user: Annotated[User, Depends(get_current_active_user)]):
+async def get_username(current_user: Annotated[User, Depends(get_current_active_user)]):
     """Get the authenticated user
     
     @return
