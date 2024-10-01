@@ -124,9 +124,9 @@ async def login_for_access_token(
     ):
 
         raise HTTPException(
-            status_code=307,
+            status_code=201,
             detail="Wait your turn",
-            headers={"WWW-Authenticate": "Bearer", "Location": "/"},
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

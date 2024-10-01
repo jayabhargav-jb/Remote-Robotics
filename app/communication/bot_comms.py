@@ -10,7 +10,7 @@ from requests import Response
 
 # Bot IP Address constants
 IP_ROS_BOT = "192.168.0.104:8081"
-IP_IOT_BOT = "192.168.0.106:8082"
+IP_IOT_BOT = "localhost:8082"
 
 router = APIRouter()
 
