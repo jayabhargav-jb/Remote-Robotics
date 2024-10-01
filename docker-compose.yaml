@@ -1,11 +1,11 @@
 services:
-    iot_bot:
+    ros_bot:
         build:
             context: .
             dockerfile: dockerfile
         volumes:
-            - ./app:/rero/iot_bot/app
+            - ./app:/rero/ros_bot/app
         ports:
-            - 8082:8082
+            - 8081:8081
         tty: true
         network_mode: host

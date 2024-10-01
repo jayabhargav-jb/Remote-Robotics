@@ -6,7 +6,7 @@ from fastapi import UploadFile, File
 
 app = FastAPI()
 
-@app.post("/alert")
+@app.post("/push_code")
 async def save_file(file: UploadFile = File(...)):
     async with aiofiles.open(f'/tmp/{file.filename}', 'wb') as out_file:
         while content := await file.read(1024):  # Read file in chunks
