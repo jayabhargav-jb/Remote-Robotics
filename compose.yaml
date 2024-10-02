@@ -11,3 +11,4 @@ services:
             - 8081:8081
         tty: true
         network_mode: host
+ 
