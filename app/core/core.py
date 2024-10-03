@@ -140,6 +140,14 @@ async def login_for_access_token(
 async def add_user(
     current_user: Annotated[User, Depends(get_current_active_user)], user: UserInDB
 ) -> User:
+
+    # Set a static past date (Oct 03, 2024) the date when this was implemented
+    datetime_const = datetime(2024, 10, 3, 12, 30).strftime("%y%m%d%H%M%S")
+    
+    # Implemented to ensure no logins are possible before the initial timeslot allotement takes place
+    user.start_time = datetime_const
+    user.end_time = datetime_const
+
     if current_user.username == "root":
 
         # Security feature to not allow the root to change the password on entry
@@ -172,11 +180,10 @@ async def set_password(
     Allow user to set password
 
     param: User, password, date_of_birth
+    
     return:
-
-        success: username
-        failure: HTTPException (401, 500)
-
+        - success: username
+        - failure: HTTPException
     """
 
     if username == "root":
