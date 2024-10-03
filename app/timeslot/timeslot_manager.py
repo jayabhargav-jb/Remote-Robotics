@@ -11,7 +11,13 @@ from ..core.core import get_current_active_user
 router = APIRouter()
 
 
-@router.get("/timeslot")
+@router.get(
+    "/timeslot",
+    responses={
+        200: {"description": "Get all the timeslots"},
+        401: {"description": "Not Authorized"},
+    },
+)
 async def get_timeslots(
     current_user: Annotated[User, Depends(get_current_active_user)]
 ) -> list[User] | None:
@@ -28,15 +34,24 @@ async def get_timeslots(
         )
 
 
-@router.get("/timeslot/allot")
+@router.get(
+    "/timeslot/allot",
+    responses={
+        200: {"description": "Allot OK"},
+        401: {
+            "description": "User Not Authorized to allot timeslot. Only root user permitted"
+        },
+        404: {"description": "User not found"},
+    },
+)
 async def set_timeslot(
     username: str,
     start_time: str,
     end_time: str,
-    current_user: Annotated[User, Depends(get_current_active_user)]
+    current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> User:
-    """ Allot a timeslot to the user
-        Only root user is authorized to allot timeslots
+    """Allot a timeslot to the user
+    Only root user is authorized to allot timeslots
     """
     if current_user.username == "root":
         user: User = ds.get_user(username)
@@ -55,4 +70,3 @@ async def set_timeslot(
             detail="Not Authorized",
             headers={"WWW-Authenticate": "Bearer"},
         )
-

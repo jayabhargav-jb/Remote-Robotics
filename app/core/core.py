@@ -125,7 +125,11 @@ async def login_for_access_token(
 
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail={'message': 'Wait your turn', 'timeslot_start': user.start_time, 'timeslot_end': user.end_time},
+            detail={
+                "message": "Wait your turn",
+                "timeslot_start": user.start_time,
+                "timeslot_end": user.end_time,
+            },
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -136,14 +140,20 @@ async def login_for_access_token(
     return Token(access_token=access_token, token_type="bearer")
 
 
-@router.post("/adduser/{username}")
+@router.post(
+    "/adduser/{username}",
+    responses={
+        401: {"description": "Only root user has the permission to create other users"},
+        403: {"description": "Username already exists in the database"},
+    },
+)
 async def add_user(
     current_user: Annotated[User, Depends(get_current_active_user)], user: UserInDB
 ) -> User:
 
     # Set a static past date (Oct 03, 2024) the date when this was implemented
     datetime_const = datetime(2024, 10, 3, 12, 30).strftime("%y%m%d%H%M%S")
-    
+
     # Implemented to ensure no logins are possible before the initial timeslot allotement takes place
     user.start_time = datetime_const
     user.end_time = datetime_const
@@ -169,7 +179,14 @@ async def add_user(
         )
 
 
-@router.post("/password/set")
+@router.post(
+    "/password/set",
+    responses={
+        200: {"description": "OK"},
+        401: {"description": "User not authenticated, or using wrong username"},
+        403: {"description": "Forbidden, cannot change root user password"},
+    },
+)
 async def set_password(
     current_user: Annotated[User, Depends(get_current_active_user)],
     username: str,
@@ -180,7 +197,7 @@ async def set_password(
     Allow user to set password
 
     param: User, password, date_of_birth
-    
+
     return:
         - success: username
         - failure: HTTPException
@@ -236,15 +253,22 @@ async def set_password(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-@router.get("/me")
+
+@router.get(
+    "/me",
+    responses={
+        401: {"description": "User not authenticated"},
+        200: {"description": "OK"},
+    },
+)
 async def get_username(current_user: Annotated[User, Depends(get_current_active_user)]):
     """Get the authenticated user
-    
+
     @return
         {
             "username": username
         }
 
     """
-    
+
     return {"username": current_user.username}

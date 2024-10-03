@@ -16,17 +16,22 @@ from ..communication import bot_comms as bc
 from ..communication import code_comms as cc
 from ..communication.check_imports import check_imports
 
-router = APIRouter(
-    prefix="/bot"
-)
+router = APIRouter(prefix="/bot")
 
-@router.post("/iot/code")
+
+@router.post(
+    "/iot/code",
+    responses={
+        200: {"description": "Code pushed successfully"},
+        400: {"description": "Invalid imports, ensure code has no import statements"},
+        500: {"description": "Internal Server Error"},
+    },
+)
 async def push_code(
-    current_user: Annotated[User, Depends(get_current_active_user)],
-    file: UploadFile
+    current_user: Annotated[User, Depends(get_current_active_user)], file: UploadFile
 ) -> bool:
     """
-    Function to save the code to a temp folder. Code that is sent by the user. 
+    Function to save the code to a temp folder. Code that is sent by the user.
     The sent code needs to be dumped into the IoT Bot
     """
     try:
@@ -44,24 +49,32 @@ async def push_code(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid imports: {imports}",
             )
-        
+
         else:
             bc.push_code(bc.IP_IOT_BOT, "/tmp/iot/iot_bot.code")
 
             return True
-        
+
     except HTTPException as e:
         raise e
-    
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e),
         )
-    
+
     return False
 
-@router.get("/iot/stop")
+
+@router.get(
+    "/iot/stop",
+    responses={
+        # TODO: Send code for no-code running on the bot
+        200: {"description": "IoT Bot stopped successfully"},
+        500: {"description": "Internal Server Error"},
+    },
+)
 async def stop_iot_bot(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> bool:
@@ -70,13 +83,19 @@ async def stop_iot_bot(
     pass
 
 
-@router.post("/ros/code")
+@router.post(
+    "/ros/code",
+    responses={
+        200: {"description": "Code pushed successfully"},
+        400: {"description": "Invalid imports, ensure code has no import statements"},
+        500: {"description": "Internal Server Error"},
+    },
+)
 async def push_code(
-    current_user: Annotated[User, Depends(get_current_active_user)],
-    file: UploadFile
+    current_user: Annotated[User, Depends(get_current_active_user)], file: UploadFile
 ) -> bool:
     """
-    Function to save the code to a temp folder. Code that is sent by the user. 
+    Function to save the code to a temp folder. Code that is sent by the user.
     The sent code needs to be dumped into the ROS Bot
     """
     try:
@@ -85,7 +104,7 @@ async def push_code(
         with open(file_path, "wb") as f:
             f.write(await file.read())
 
-        imports: list = check_imports("/tmp/ros/ros_bot.code") 
+        imports: list = check_imports("/tmp/ros/ros_bot.code")
 
         print(imports)
 
@@ -94,7 +113,7 @@ async def push_code(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid imports: {imports}",
             )
-            
+
         else:
             bc.push_code(bc.IP_ROS_BOT, "/tmp/ros/ros_bot.code")
 
@@ -111,10 +130,18 @@ async def push_code(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e),
         )
-    
+
     # return False
 
-@router.get("/ros/stop")
+
+@router.get(
+    "/ros/stop",
+    responses={
+        # TODO: Send code for no-code running on the bot
+        200: {"description": "IoT Bot stopped successfully"},
+        500: {"description": "Internal Server Error"},
+    },
+)
 async def stop_ros_bot(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> bool:
