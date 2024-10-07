@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 from ..database import operations as ds
 from ..core.schema import Token, TokenData, User, UserInDB
 
-from ..core.core import get_current_active_user
+from ..core.core import get_current_active_user, iot_bot_access, ros_bot_access
 
 from ..communication import bot_comms as bc
 from ..communication import code_comms as cc
@@ -28,7 +28,7 @@ router = APIRouter(prefix="/bot")
     },
 )
 async def push_code(
-    current_user: Annotated[User, Depends(get_current_active_user)], file: UploadFile
+    current_user: Annotated[User, Depends(iot_bot_access)], file: UploadFile
 ) -> bool:
     """
     Function to save the code to a temp folder. Code that is sent by the user.
@@ -76,11 +76,11 @@ async def push_code(
     },
 )
 async def stop_iot_bot(
-    current_user: Annotated[User, Depends(get_current_active_user)],
+    current_user: Annotated[User, Depends(iot_bot_access)],
 ) -> bool:
     """Emergency stop for the IoT BOT"""
     # TODO: Implement stop message over socket stream
-    pass
+    return True
 
 
 @router.post(
@@ -92,7 +92,7 @@ async def stop_iot_bot(
     },
 )
 async def push_code(
-    current_user: Annotated[User, Depends(get_current_active_user)], file: UploadFile
+    current_user: Annotated[User, Depends(ros_bot_access)], file: UploadFile
 ) -> bool:
     """
     Function to save the code to a temp folder. Code that is sent by the user.
@@ -143,7 +143,7 @@ async def push_code(
     },
 )
 async def stop_ros_bot(
-    current_user: Annotated[User, Depends(get_current_active_user)],
+    current_user: Annotated[User, Depends(ros_bot_access)],
 ) -> bool:
     """Emergency stop for the ROS Bot"""
     # TODO: Implement stop message over socket stream

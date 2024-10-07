@@ -20,6 +20,7 @@ class User(BaseModel):
     start_time: start time of the user timeslot for access
     stop_time: end time of the user timeslot for access
     date_of_birth: User date of birth
+    bot: Bot access during the timeslot
     """
 
     username: str
@@ -28,6 +29,7 @@ class User(BaseModel):
     start_time: str
     end_time: str
     date_of_birth: date
+    bot: str
 
 
 class UserInDB(User):

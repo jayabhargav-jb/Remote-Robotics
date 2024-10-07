@@ -26,11 +26,11 @@ def add_user(user: UserInDB):
 
         # Write a query to insert the user data into the table
         query = '''
-        INSERT INTO users (username, hashed_password, disabled, blacklist, start_time, end_time, date_of_birth)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO users (username, hashed_password, disabled, blacklist, start_time, end_time, date_of_birth, bot)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         '''
         # Execute the query with the user data
-        cursor.execute(query, (user.username, user.hashed_password, user.disabled, user.blacklist, user.start_time, user.end_time, user.date_of_birth))
+        cursor.execute(query, (user.username, user.hashed_password, user.disabled, user.blacklist, user.start_time, user.end_time, user.date_of_birth, user.bot))
         sqliteConnection.commit()
         
         print('User added successfully to the database.')
@@ -80,7 +80,7 @@ def get_users() -> List[User]:
             if users_details:
                 # Create a User object with the fetched details
                 for user_details in users_details:
-                    user = User(username=user_details[0], hashed_password=user_details[1], disabled=user_details[2], blacklist=user_details[3], start_time=user_details[4], end_time=user_details[5])
+                    user = User(username=user_details[0], hashed_password=user_details[1], disabled=user_details[2], blacklist=user_details[3], start_time=user_details[4], end_time=user_details[5], date_of_birth=user_details[6], bot=user_details[7])
                     users.append(user)
             else:
                 print("DB: No users found")
@@ -98,6 +98,8 @@ def get_users() -> List[User]:
             if sqliteConnection:
                 sqliteConnection.close()
                 print("DB: Connection Closed")
+
+            print(users)
     
             return users
 
@@ -121,7 +123,7 @@ def get_user(username: str) -> User | None:
         # Check if user exists
         if user_details:
             # Create a User object with the fetched details
-            user = UserInDB(username=user_details[0], hashed_password=user_details[1], disabled=user_details[2], blacklist=user_details[3], start_time=user_details[4], end_time=user_details[5], date_of_birth=user_details[6])
+            user = UserInDB(username=user_details[0], hashed_password=user_details[1], disabled=user_details[2], blacklist=user_details[3], start_time=user_details[4], end_time=user_details[5], date_of_birth=user_details[6], bot=user_details[7])
             print(user, type(user))
         else:
             print("DB: User", username, "not found")
@@ -161,7 +163,7 @@ def get_user_in_db(username: str) -> UserInDB | None:
         # Check if user exists
         if user_details:
             # Create a User object with the fetched details
-            user = UserInDB(username=user_details[0], hashed_password=user_details[1], disabled=user_details[2], blacklist=user_details[3], start_time=user_details[4], end_time=user_details[5], date_of_birth=user_details[6])
+            user = UserInDB(username=user_details[0], hashed_password=user_details[1], disabled=user_details[2], blacklist=user_details[3], start_time=user_details[4], end_time=user_details[5], date_of_birth=user_details[6], bot=user_details[7])
             print(user, type(user))
         else:
             print("DB: User", username, "not found")
@@ -211,7 +213,8 @@ def init():
                 blacklist BOOL NOT NULL,
                 start_time TEXT,
                 end_time TEXT,
-                date_of_birth DATE
+                date_of_birth DATE,
+                bot TEXT
             );
             '''
 
@@ -221,11 +224,11 @@ def init():
 
             # Insert root user into the table
             query = '''
-            INSERT INTO users (username, hashed_password, disabled, blacklist, start_time, end_time, date_of_birth)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO users (username, hashed_password, disabled, blacklist, start_time, end_time, date_of_birth, bot)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             '''
             # Execute the query with the user data
-            cursor.execute(query, ("root", '$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 0, 0, 0, 0, date(year=2024, month=10, day=10)))
+            cursor.execute(query, ("root", '$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 0, 0, 0, 0, date(year=2024, month=10, day=10), ""))
 
             sqliteConnection.commit()
             print('DB: Root user created successfully.')
@@ -245,7 +248,7 @@ def init():
             print('DB: SQLite Connection closed')
 
 
-def allot_timeslot(username: str, start_time: str, end_time: str) -> User | None:
+def allot_timeslot(username: str, start_time: str, end_time: str, bot: str) -> User | None:
     
         sqliteConnection = None
         user = None
@@ -256,8 +259,8 @@ def allot_timeslot(username: str, start_time: str, end_time: str) -> User | None
             print('DB: Init')
     
             # Update the start_time and end_time of the user
-            query = "UPDATE users SET start_time = ?, end_time = ? WHERE username = ?"
-            cursor.execute(query, (start_time, end_time, username))
+            query = "UPDATE users SET start_time = ?, end_time = ?, bot= ? WHERE username = ?"
+            cursor.execute(query, (start_time, end_time, bot, username))
             sqliteConnection.commit()
     
             # Check if any rows were affected

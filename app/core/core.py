@@ -4,23 +4,18 @@ from datetime import datetime, timedelta, timezone, date
 
 from fastapi import APIRouter, HTTPException, Depends, status, FastAPI
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from fastapi.staticfiles import StaticFiles
 
 import jwt
 from jwt.exceptions import InvalidTokenError
 
-import pytz
 from passlib.context import CryptContext
-from pydantic import BaseModel
 
 from .schema import Token, TokenData, User, UserInDB
 import sqlite3
 
 from typing import Annotated
 
-router = APIRouter(
-    # prefix="/core",
-)
+router = APIRouter()
 
 with open("/etc/secret") as f:
     global SECRET_KEY
@@ -97,6 +92,61 @@ async def get_current_active_user(
     return current_user
 
 
+async def only_root_user(
+        current_user: Annotated[User, Depends(get_current_user)]
+):
+    """Allow only root user to access functionality"""
+    if current_user.username != "root":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not Authorized",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return current_user
+
+
+async def iot_bot_access(
+    current_user: Annotated[User, Depends(get_current_active_user)]
+):
+    """Allow only root user and user with timeslot alloted to iot_bot to access"""
+    
+    if current_user.bot == "iot" or current_user.username == "root":
+        return current_user
+    
+    elif current_user.bot == "ros":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are alloted a timeslot for ROS Bot",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Not Authorized",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+async def ros_bot_access(
+    current_user: Annotated[User, Depends(get_current_active_user)]
+):
+    """Allow only root user and user with timeslot alloted to ros_bot to access"""
+    if current_user.bot == "ros" or current_user.username =="root":
+        return current_user
+    
+    elif current_user.bot == "iot":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are alloted a timeslot for IOT Bot",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Not Authorized",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+
 @router.post("/token")
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()], response_model=None
@@ -123,6 +173,11 @@ async def login_for_access_token(
         )
     ):
 
+        print(int(user.start_time) > int(datetime.now().strftime("%y%m%d%H%M%S")))
+        print(int(user.end_time) < int(datetime.now().strftime("%y%m%d%H%M%S")))
+        print(user.start_time, int(datetime.now().strftime("%y%m%d%H%M%S")))
+        print(user.end_time, int(datetime.now().strftime("%y%m%d%H%M%S")))
+
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail={
@@ -147,9 +202,22 @@ async def login_for_access_token(
         403: {"description": "Username already exists in the database"},
     },
 )
+
 async def add_user(
-    current_user: Annotated[User, Depends(get_current_active_user)], user: UserInDB
+    user: UserInDB,
+    current_user: Annotated[User, Depends(only_root_user)], 
 ) -> User:
+    
+    """
+        Create a new User(
+            username (str): Username, must be unique for every user
+            diabled (bool): Disable a user
+            blacklist (bool): Blacklist a user for short duration
+            date_of_birth (str): User date of birth for setting password
+        )
+
+        return: User
+    """
 
     # Set a static past date (Oct 03, 2024) the date when this was implemented
     datetime_const = datetime(2024, 10, 3, 12, 30).strftime("%y%m%d%H%M%S")
@@ -158,23 +226,18 @@ async def add_user(
     user.start_time = datetime_const
     user.end_time = datetime_const
 
-    if current_user.username == "root":
+    # Set bot to null str
+    user.bot = ""
 
-        # Security feature to not allow the root to change the password on entry
-        user.hashed_password = get_password_hash(user.username)
-        try:
-            ds.add_user(user)
-            return ds.get_user_in_db(user.username)
-        except sqlite3.IntegrityError:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Duplicate username",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-    else:
+    # Security feature to not allow the root to change the password on entry
+    user.hashed_password = get_password_hash(user.username)
+    try:
+        ds.add_user(user)
+        return ds.get_user_in_db(user.username)
+    except sqlite3.IntegrityError:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not Authorized",
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Duplicate username",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
