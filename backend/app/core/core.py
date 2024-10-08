@@ -86,9 +86,25 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 async def get_current_active_user(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
-    print(current_user, type(current_user))
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
+    
+    elif (current_user.username != "root") and (
+        (
+            int(current_user.start_time) > int(datetime.now().strftime("%y%m%d%H%M%S"))
+            or int(current_user.end_time) < int(datetime.now().strftime("%y%m%d%H%M%S"))
+        )
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "message": "Wait your turn",
+                "timeslot_start": current_user.start_time,
+                "timeslot_end": current_user.end_time,
+            },
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     return current_user
 
 
@@ -172,11 +188,6 @@ async def login_for_access_token(
             or int(user.end_time) < int(datetime.now().strftime("%y%m%d%H%M%S"))
         )
     ):
-
-        print(int(user.start_time) > int(datetime.now().strftime("%y%m%d%H%M%S")))
-        print(int(user.end_time) < int(datetime.now().strftime("%y%m%d%H%M%S")))
-        print(user.start_time, int(datetime.now().strftime("%y%m%d%H%M%S")))
-        print(user.end_time, int(datetime.now().strftime("%y%m%d%H%M%S")))
 
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
