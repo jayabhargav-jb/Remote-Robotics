@@ -1,6 +1,6 @@
 cd /rero/ros_bot
 
-source "/opt/ros/humble/setup.bash"
+source /opt/ros/humble/setup.bash
 # . ./venv/bin/activate
 
 
