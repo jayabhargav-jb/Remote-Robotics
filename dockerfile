@@ -86,5 +86,7 @@ VOLUME ["/rero/ros_bot/app"]
 # ROS Bot communication port
 EXPOSE 8081
 
+COPY ./app/startup_dev.sh /rero/ros_bot/app/startup_dev.sh
+
 # CMD [ "/bin/bash" ]
 CMD ["/bin/bash", "/rero/ros_bot/app/startup_dev.sh"]
