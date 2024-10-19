@@ -65,6 +65,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-humble-ros-base=0.10.0-1* \
     && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ros-dev-tools \
+    && rm -rf /var/lib/apt/lists/*
+
 
 
 # Why do we need a virual environment in a docker container 
@@ -79,6 +83,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY ./requirements.txt /rero/ros_bot/requirements.txt
 RUN python3 -m pip install -r /rero/ros_bot/requirements.txt
 
+SHELL ["/bin/bash", "-c"]
+RUN source /opt/ros/humble/setup.bash
+
 # Volume for the source
 RUN mkdir -p /rero/ros_bot/app
 VOLUME ["/rero/ros_bot/app"]
@@ -87,6 +94,10 @@ VOLUME ["/rero/ros_bot/app"]
 EXPOSE 8081
 
 COPY ./app/startup_dev.sh /rero/ros_bot/app/startup_dev.sh
+WORKDIR /rero/ros_bot/app/ros2_ws
+
+# RUN colcon build --symlink-install
 
 # CMD [ "/bin/bash" ]
-CMD ["/bin/bash", "/rero/ros_bot/app/startup_dev.sh"]
+# ENTRYPOINT [ "/rero/ros_bot/app/startup_dev.sh" ]
+# CMD ["/bin/bash", "/rero/ros_bot/app/startup_dev.sh"]
