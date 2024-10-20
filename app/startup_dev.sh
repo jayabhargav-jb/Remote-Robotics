@@ -1,9 +1,12 @@
 #!/bin/bash
 set -e
-cd /rero/ros_bot
 
-source source /opt/ros/humble/setup.bash 
-# . ./venv/bin/activate
+# setup ros2 environment
+source "/opt/ros/humble/setup.bash" --
+
+if [ -f "/rero/ros_bot/app/ros2_ws/devel/setup.bash" ]; then
+    source /rero/ros_bot/app/ros2_ws/devel/setup.bash
+fi
 
 
-# uvicorn app.main:app --host 0.0.0.0 --port 8081 --reload
+exec "$@"

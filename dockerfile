@@ -93,11 +93,14 @@ VOLUME ["/rero/ros_bot/app"]
 # ROS Bot communication port
 EXPOSE 8081
 
-COPY ./app/startup_dev.sh /rero/ros_bot/app/startup_dev.sh
+# LIDAR stream
+EXPOSE 5000
+
+COPY ./app/startup_dev.sh /rero/ros_bot/app/
 WORKDIR /rero/ros_bot/app/ros2_ws
 
 # RUN colcon build --symlink-install
 
-# CMD [ "/bin/bash" ]
-# ENTRYPOINT [ "/rero/ros_bot/app/startup_dev.sh" ]
+ENTRYPOINT [ "/rero/ros_bot/app/startup_dev.sh" ]
+CMD [ "/bin/bash" ]
 # CMD ["/bin/bash", "/rero/ros_bot/app/startup_dev.sh"]

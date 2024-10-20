@@ -1,5 +1,6 @@
 services:
     ros_bot:
+        container_name: ros_bot
         build:
             context: .
             dockerfile: dockerfile
@@ -7,5 +8,6 @@ services:
             - ./app:/rero/ros_bot/app
         ports:
             - 8081:8081
+            - 5000:5000
         tty: true
         network_mode: host
