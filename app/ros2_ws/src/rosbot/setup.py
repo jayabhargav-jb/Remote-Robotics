@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-        'motor_controller = rosbot.motor_controller:main'
+        'motor_controller = rosbot.motor_controller:main',
+        'tf_publish = rosbot.tf_transform_odom_base:main'
         ],
     },
 )

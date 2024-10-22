@@ -3,11 +3,12 @@ from rclpy.node import Node
 from geometry_msgs.msg import Twist
 import minimalmodbus
 import time
+from math import pi
 
 class MotorControl:
 
     def __init__(self, slave_id):
-        self.instrument = minimalmodbus.Instrument('/dev/ttyUSB1', slave_id)
+        self.instrument = minimalmodbus.Instrument('/dev/ttyUSB0', slave_id)
         self.instrument.serial.baudrate = 9600
         self.instrument.serial.timeout = 2  # seconds
         self.instrument.mode = minimalmodbus.MODE_ASCII
@@ -33,7 +34,7 @@ class Stop:
     def emergency():
         slave_ids = [1, 5, 6, 7]  # All motor IDs
         for slave_id in slave_ids:
-            instrument = minimalmodbus.Instrument('/dev/ttyUSB1', slave_id)
+            instrument = minimalmodbus.Instrument('/dev/ttyUSB0', slave_id)
             instrument.serial.baudrate = 9600
             instrument.serial.timeout = 2
             instrument.mode = minimalmodbus.MODE_ASCII
@@ -72,10 +73,10 @@ class MotorControlNode(Node):
 
         # Set motor directions
         direction_bl = 0 if speed_bl >= 0 else 1
-        direction_br = 0 if speed_br >= 0 else 1
+        direction_br = 1 if speed_br >= 0 else 0
         direction_fl = 0 if speed_fl >= 0 else 1
-        direction_fr = 0 if speed_fr >= 0 else 1
-
+        direction_fr = 1 if speed_fr >= 0 else 0
+        
         # Apply absolute values since speed cannot be negative
         self.motor_back_left.set_motor_speed(abs(speed_bl), direction_bl)
         self.motor_back_right.set_motor_speed(abs(speed_br), direction_br)
@@ -100,13 +101,22 @@ class MotorControlNode(Node):
         Returns:
             Motor speed in RPM (bounded between 0 and 9750 RPM)
         """
-        # Scaling constants (example values; adjust as needed)
-        linear_scale = 5000  # Conversion from m/s to motor RPM
-        angular_scale = 1000  # Conversion from rad/s to differential motor RPM
 
-        # Calculate motor speed
-        speed_rpm = (linear_vel * linear_scale) + (side * angular_vel * angular_scale)
-        return max(0, min(9750, int(speed_rpm)))  # Bound speed within [0, 9750] RPM
+        # Constants
+        gear_ratio = 90
+        wheel_radius = 0.1  # meters
+        wheel_separation = 0.1  # equivalent to the 0.05*2 from the original code
+
+        # Calculate velocity for the specific side (right or left)
+        # side = 1 for right, -1 for left
+        wheel_velocity = linear_vel + (side * (wheel_separation/2) * angular_vel)
+
+        # Convert wheel velocity to RPM using the formula:
+        # RPM = (velocity / (2*pi*radius)) * 60 * gear_ratio
+        speed_rpm = abs((wheel_velocity / (2 * pi * wheel_radius)) * 60 * gear_ratio)
+
+        # Bound speed within [0, 9750] RPM
+        return max(0, min(9750, int(speed_rpm)))
 
 
 def main(args=None):
