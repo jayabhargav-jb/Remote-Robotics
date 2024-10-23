@@ -78,6 +78,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-humble-nav2-bringup  \
     && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ros-humble-tf-transformations  \
+    && rm -rf /var/lib/apt/lists/*
+
+# cartographer installation
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ros-humble-cartographer  \
+    && rm -rf /var/lib/apt/lists/*
+ 
+
+
 
 # Why do we need a virual environment in a docker container 
 # # Create the python virtual environment

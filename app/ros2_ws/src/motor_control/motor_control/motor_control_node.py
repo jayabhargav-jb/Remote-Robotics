@@ -26,7 +26,7 @@ class MotorControl:
 
     def stop(self):
         # Set motor to E-stop mode
-        self.instrument.write_register(self.slave_id, 1792, 0, functioncode=6)  # E-Stop mode
+        self.instrument.write_register(2, 1792, 0, functioncode=6)  # E-Stop mode
 
 
 class Stop:
@@ -64,6 +64,11 @@ class MotorControlNode(Node):
     def cmd_vel_callback(self, msg: Twist):
         linear_velocity = msg.linear.x  # Forward/backward velocity (m/s)
         angular_velocity = msg.angular.z  # Rotational velocity (rad/s)
+
+        # Check if both velocities are zero and trigger emergency stop
+        if abs(linear_velocity) < 0.001 and abs(angular_velocity) < 0.001:
+            self.get_logger().info('Zero velocity detected - triggering emergency stop')
+            Stop.emergency()
 
         # Calculate individual motor speeds (in RPM)
         speed_bl = self.calculate_motor_speed(linear_velocity, angular_velocity, -1)  # Back Left
